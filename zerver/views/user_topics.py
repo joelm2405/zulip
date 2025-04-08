@@ -113,3 +113,4 @@ def update_user_topic(
         user_profile, stream, topic, visibility_policy=visibility_policy
     )
     return json_success(request)
+
