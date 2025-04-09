@@ -251,7 +251,7 @@ from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 
 # cambio aca
-from zerver.views.user_topics import get_stream_topic_counts
+from zerver.views.streams import get_stream_topic_counts
 #
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
@@ -549,10 +549,7 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/consents", GET=get_users_export_consents),
 
     #cambio aqui
-    rest_path(
-        "user_topics/stream_topic_counts",
-        GET=get_stream_topic_counts,
-    ),
+    rest_path("streams/<int:stream_id>/topics-info", GET=get_stream_topic_counts),
 ]
 
 integrations_view = IntegrationView.as_view()

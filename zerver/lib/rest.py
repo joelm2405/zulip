@@ -8,7 +8,7 @@ from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from typing_extensions import ParamSpec
-from zerver.views.user_topics import get_stream_topic_counts
+from zerver.views.streams import get_stream_topic_counts
 
 
 from zerver.decorator import (
