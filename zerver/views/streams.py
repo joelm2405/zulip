@@ -1216,10 +1216,8 @@ def get_stream_topic_counts(
     Devuelve el total de topics visibles y la cantidad de topics seguidos
     para el usuario autenticado en un stream específico.
     """
-    # 🔐 Validación segura del stream
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
-    # ✅ Topics visibles al usuario (públicos o por suscripción)
     topics = get_topic_history_for_stream(
         user_profile=user_profile,
         recipient_id=assert_is_not_none(stream.recipient_id),
@@ -1228,7 +1226,6 @@ def get_stream_topic_counts(
     )
     total_topics = len(topics)
 
-    # ✅ Topics que están marcados como FOLLOWED por el usuario
     followed_topic_names = set(
         UserTopic.objects.filter(
             user_profile=user_profile,
