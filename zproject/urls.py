@@ -250,6 +250,10 @@ from zerver.views.video_calls import (
 from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 
+# cambio aca
+from zerver.views.user_topics import get_stream_topic_counts
+#
+
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
@@ -543,6 +547,12 @@ v1_api_and_json_patterns = [
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+
+    #cambio aqui
+    rest_path(
+        "user_topics/stream_topic_counts",
+        GET=get_stream_topic_counts,
+    ),
 ]
 
 integrations_view = IntegrationView.as_view()

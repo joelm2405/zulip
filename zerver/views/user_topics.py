@@ -114,3 +114,50 @@ def update_user_topic(
     )
     return json_success(request)
 
+
+@typed_endpoint
+def get_stream_topic_counts(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    stream_id: Json[int],
+) -> HttpResponse:
+    from zerver.models import Stream, Message, UserTopic
+
+    try:
+        stream = Stream.objects.get(id=stream_id)
+    except Stream.DoesNotExist:
+        from zerver.lib.response import json_error
+        return json_error(_("Invalid stream ID"))
+
+    recipient_id = stream.recipient_id
+
+    # Paso 1: obtener todos los nombres de tópicos del canal (distintos)
+    topic_names = (
+        Message.objects.filter(
+            recipient_id=recipient_id,
+            is_channel_message=True,
+        )
+        .values_list("subject", flat=True)
+        .distinct()
+    )
+
+    # Paso 2: contar cuántos existen
+    total_topics = len(topic_names)
+
+    # Paso 3: contar cuántos están marcados como FOLLOWED por el usuario
+    followed_topics = UserTopic.objects.filter(
+        user_profile=user_profile,
+        stream=stream,
+        visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        topic_name__in=topic_names,
+    ).count()
+
+    return json_success(
+        request,
+        data={
+            "stream_id": stream_id,
+            "total_topics": total_topics,
+            "followed_topics": followed_topics,
+        },
+    )

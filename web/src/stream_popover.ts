@@ -42,10 +42,9 @@ import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
-import { get_subscriber_count } from "./peer_data.ts";
-import { topic } from "./compose_state.ts";
-import { is_topic_followed } from "./user_topics.ts";
 import * as topic_list_data from "./topic_list_data.ts";
+
+
 
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
@@ -111,7 +110,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const total_topics = topic_info.num_possible_topics;
     const followed_topics = topic_info.items.filter((topic) => topic.is_followed).length;
 
-
+    
     const stream_hash = hash_util.by_stream_url(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
