@@ -549,7 +549,6 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/consents", GET=get_users_export_consents),
 
     #cambio aqui
-    rest_path("streams/<int:stream_id>/topics-info", GET=get_stream_topic_counts),
 ]
 
 integrations_view = IntegrationView.as_view()
