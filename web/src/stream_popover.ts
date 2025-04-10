@@ -42,8 +42,6 @@ import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
-import * as topic_list_data from "./topic_list_data.ts";
-
 
 
 // In this module, we manage stream popovers
@@ -96,21 +94,13 @@ function stream_popover_sub(
     return sub;
 }
 
-function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void {
-    const {elt, stream_id} = opts;
+export async function build_stream_popover(opts: { elt: HTMLElement; stream_id: number }): Promise<void> {
+    const { elt, stream_id } = opts;
 
-    // This will allow the user to close the popover by clicking
-    // on the reference element if the popover is already open.
     if (popover_menus.get_stream_actions_popover()?.reference === elt) {
         return;
     }
 
-
-    const topic_info = topic_list_data.get_list_info(stream_id, false, "");
-    const total_topics = topic_info.num_possible_topics;
-    const followed_topics = topic_info.items.filter((topic) => topic.is_followed).length;
-
-    
     const stream_hash = hash_util.by_stream_url(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
@@ -118,17 +108,34 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
+
+    let topic_count = 0;
+    let followed_topic_count = 0;
+
+    try {
+        const response = await fetch(`/json/streams/${stream_id}/topics-info`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch topic counts");
+        }
+        const data = await response.json();
+        topic_count = data.total_topics;
+        followed_topic_count = data.followed_topics;
+    } catch (error) {
+        console.error("Error fetching topic counts from backend:", error);
+    }
+
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
-            get_subscriber_count:stream_data.get_subscriber_count(stream_id),
-            topic_count: total_topics,
-            followed_topic_count: followed_topics,
+            get_subscriber_count: stream_data.get_subscriber_count(stream_id),
+            topic_count,
+            followed_topic_count,
         },
         has_unread_messages,
         show_go_to_channel_feed,
     });
+
 
     popover_menus.toggle_popover_menu(elt, {
         // Add a delay to separate `hideOnClick` and `onShow` so that

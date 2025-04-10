@@ -1203,3 +1203,40 @@ def get_stream_email_address(
     stream_email = encode_email_address(stream.name, email_token, show_sender=True)
 
     return json_success(request, data={"email": stream_email})
+
+
+@typed_endpoint
+def get_stream_topic_counts(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    stream_id: PathOnly[NonNegativeInt],
+) -> HttpResponse:
+    """
+    Devuelve el total de topics visibles y la cantidad de topics seguidos
+    para el usuario autenticado en un stream específico.
+    """
+    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+
+    topics = get_topic_history_for_stream(
+        user_profile=user_profile,
+        recipient_id=assert_is_not_none(stream.recipient_id),
+        public_history=stream.is_history_public_to_subscribers(),
+        allow_empty_topic_name=False,
+    )
+    total_topics = len(topics)
+
+    followed_topic_names = set(
+        UserTopic.objects.filter(
+            user_profile=user_profile,
+            stream_id=stream.id,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        ).values_list("topic_name", flat=True)
+    )
+    followed_count = len(followed_topic_names)
+
+    return json_success(request, data={
+        "stream_id": stream_id,
+        "total_topics": total_topics,
+        "followed_topics": followed_count,
+    })
